@@ -2,6 +2,7 @@ package task
 
 import (
     "fmt"
+    "strconv"
     "github.com/dee-ex/todo_list_api/entities"
 )
 
@@ -60,14 +61,21 @@ func (service *Service) RestoreTask(task_id int) error {
 }
 
 func (service *Service) DeleteTask(task_id int) error {
-    task, err := service.repo.GetTaskByID(task_id)
+    return service.repo.DeleteTask(task_id)
+}
+
+func (service *Service) ValidateTaskIDAndAuth(task_id, owner string) (int, error) {
+    int_task_id, err := strconv.Atoi(task_id)
     if err != nil {
-        return err
+        return 0, err
     }
-    err = service.repo.DeleteTask(task_id)
+    task, err := service.GetDetailTask(int_task_id, owner)
     if err != nil {
-        return err
+        return 0, err
     }
-    deleted_task := entities.DeletedTask(*task)
-    return service.repo.CreateDeletedTask(&deleted_task)
+    // no task has 0 id
+    if task.ID == 0 {
+        return 0, fmt.Errorf("You do not own this task")
+    }
+    return int_task_id, nil
 }

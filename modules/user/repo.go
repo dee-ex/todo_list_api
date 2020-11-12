@@ -25,42 +25,42 @@ func (repo *Repo) CreateUser(user *entities.User) error {
 
 func (repo *Repo) GetUsername(username string) (string, error) {
     var query_username string
-    res := repo.db.Model(&entities.User{}).Select("Username").Where("Username = ?", username).Find(&query_username)
+    res := repo.db.Model(&entities.User{}).Select("Username").Where("Username = ? AND Deleted = false", username).Find(&query_username)
     return query_username, res.Error
 }
 
 
 func (repo *Repo) GetEmail(email string) (string, error) {
     var query_email string
-    res := repo.db.Model(&entities.User{}).Select("Email").Where("Email = ?", email).Find(&query_email)
+    res := repo.db.Model(&entities.User{}).Select("Email").Where("Email = ? AND Deleted = false", email).Find(&query_email)
     return query_email, res.Error
 }
 
 func (repo *Repo) GetUserByUsername (username string) (*entities.User, error) {
     var user entities.User
-    res := repo.db.Where("Username = ?", username).Find(&user)
+    res := repo.db.Where("Username = ? AND Deleted = false", username).Find(&user)
     return &user, res.Error
 }
 
 func (repo *Repo) GetUserByEmail (email string) (*entities.User, error) {
     var user entities.User
-    res := repo.db.Where("Email = ?", email).Find(&user)
+    res := repo.db.Where("Email = ? AND Deleted = false", email).Find(&user)
     return &user, res.Error
 }
 
 func (repo *Repo) GetUserByUsernameAndPassword(username, password string) (*entities.User, error) {
     var user entities.User
-    res := repo.db.Where("Username = ? AND Password = ?", username, password).Find(&user)
+    res := repo.db.Where("Username = ? AND Password = ? AND Deleted = false", username, password).Find(&user)
     return &user, res.Error
 }
 
 func (repo *Repo) UpdatePassword(username, password string) error {
-    res := repo.db.Model(&entities.User{}).Where("Username = ?", username).Update("Password", password)
+    res := repo.db.Model(&entities.User{}).Where("Username = ? AND Deleted = false", username).Update("Password", password)
     return res.Error
 }
 
 func (repo *Repo) DeleteUser(username string) error {
-    res := repo.db.Where("Username = ?", username).Delete(&entities.User{})
+    res := repo.db.Model(&entities.User{}).Where("Username = ?", username).Update("Deleted", true)
     return res.Error
 }
 
@@ -77,10 +77,5 @@ func (repo *Repo) UpdateAccessToken(username, access_token string) error {
 
 func (repo *Repo) UpdateResetpwToken(username, resetpw_token string) error {
     res := repo.db.Model(&entities.Token{}).Where("User = ?", username).Update("Resetpw_Token", resetpw_token)
-    return res.Error
-}
-
-func (repo *Repo) CreateDeletedUser(deleted_user *entities.DeletedUser) error {
-    res := repo.db.Create(deleted_user)
     return res.Error
 }

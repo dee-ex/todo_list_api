@@ -118,16 +118,7 @@ func (service *Service) UpdateUser(username string, data UserUpdate) error {
 }
 
 func (service *Service) DeleteUser(username string) error {
-    user, err := service.repo.GetUserByUsername(username)
-    if err != nil {
-        return err
-    }
-    err = service.repo.DeleteUser(username)
-    if err != nil {
-        return err
-    }
-    deleted_user := entities.DeletedUser(*user)
-    err = service.repo.CreateDeletedUser(&deleted_user)
+    err := service.repo.DeleteUser(username)
     if err != nil {
         return err
     }

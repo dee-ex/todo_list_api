@@ -5,13 +5,7 @@ type User struct {
     Username string `json: "username" gorm: "column:Username"`
     Email string `json: "email" gorm:  "column:Email"`
     Password string `json: "password" gorm: "column:Password"`
-}
-
-type DeletedUser struct {
-    ID int `json: "id" gorm: "column:ID"`
-    Username string `json: "username" gorm: "column:Username"`
-    Email string `json: "email" gorm:  "column:Email"`
-    Password string `json: "password" gorm: "column:Password"`
+    Deleted bool `json: "deleted" gorm: "column:Deleted"`
 }
 
 type Token struct {

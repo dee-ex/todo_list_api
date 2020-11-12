@@ -67,7 +67,7 @@ func HandleGetDetailTask(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     task_id, err := strconv.Atoi(vars["task_id"])
     if err != nil {
-        utils.HandleError(w, http.StatusNotFound, err)
+        utils.HandleError(w, http.StatusNotFound, fmt.Errorf("Task id is invalid"))
         return
     }
     service := NewService()
@@ -89,32 +89,33 @@ func HandleGetDetailTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpdateTask(w http.ResponseWriter, r *http.Request) {
-    owner := r.Context().Value("username").(string)
-    vars := mux.Vars(r)
-    task_id, err := strconv.Atoi(vars["task_id"])
-    if err != nil {
-        utils.HandleError(w, http.StatusNotFound, err)
-        return
-    }
     var data TaskUpdate
-    err = json.NewDecoder(r.Body).Decode(&data)
+    err := json.NewDecoder(r.Body).Decode(&data)
     if err != nil {
         utils.HandleError(w, http.StatusBadRequest, err)
         return
     }
+    owner := r.Context().Value("username").(string)
+    vars := mux.Vars(r)
     service := NewService()
     if service == nil {
         utils.HandleError(w, http.StatusInternalServerError, fmt.Errorf("Cannot create a session to database"))
         return
     }
-    task, err := service.GetDetailTask(task_id, owner)
+    task_id, err := service.ValidateTaskIDAndAuth(vars["task_id"], owner)
     if err != nil {
-        utils.HandleError(w, http.StatusInternalServerError, err)
-        return
-    }
-    // no task has 0 id
-    if task.ID == 0 {
-        utils.HandleError(w, http.StatusNotFound, fmt.Errorf("You do not own this task"))
+        var status int
+        switch err {
+        case SERVICE_ERROR_INVALID_TASK_ID:
+            status = http.StatusNotFound
+        case SERVICE_ERROR_INVALID_OWNER:
+            status = http.StatusNotFound
+        case SERVICE_ERROR_INTERNAL_SERVER_ERROR:
+            status = http.StatusInternalServerError
+        default:
+            status = http.StatusInternalServerError
+        }
+        utils.HandleError(w, status, err)
         return
     }
     err = service.UpdateTask(task_id, data)
@@ -128,24 +129,25 @@ func HandleUpdateTask(w http.ResponseWriter, r *http.Request) {
 func HandleDeleteTask(w http.ResponseWriter, r *http.Request) {
     owner := r.Context().Value("username").(string)
     vars := mux.Vars(r)
-    task_id, err := strconv.Atoi(vars["task_id"])
-    if err != nil {
-        utils.HandleError(w, http.StatusNotFound, err)
-        return
-    }
     service := NewService()
     if service == nil {
         utils.HandleError(w, http.StatusInternalServerError, fmt.Errorf("Cannot create a session to database"))
         return
     }
-    task, err := service.GetDetailTask(task_id, owner)
+    task_id, err := service.ValidateTaskIDAndAuth(vars["task_id"], owner)
     if err != nil {
-        utils.HandleError(w, http.StatusInternalServerError, err)
-        return
-    }
-    // no task has 0 id
-    if task.ID == 0 {
-        utils.HandleError(w, http.StatusNotFound, fmt.Errorf("You do not own this task"))
+        var status int
+        switch err {
+        case SERVICE_ERROR_INVALID_TASK_ID:
+            status = http.StatusNotFound
+        case SERVICE_ERROR_INVALID_OWNER:
+            status = http.StatusNotFound
+        case SERVICE_ERROR_INTERNAL_SERVER_ERROR:
+            status = http.StatusInternalServerError
+        default:
+            status = http.StatusInternalServerError
+        }
+        utils.HandleError(w, status, err)
         return
     }
     err = service.DeleteTask(task_id)
@@ -160,24 +162,25 @@ func HandleDeleteTask(w http.ResponseWriter, r *http.Request) {
 func HandleArchiveTask(w http.ResponseWriter, r *http.Request) {
     owner := r.Context().Value("username").(string)
     vars := mux.Vars(r)
-    task_id, err := strconv.Atoi(vars["task_id"])
-    if err != nil {
-        utils.HandleError(w, http.StatusNotFound, err)
-        return
-    }
     service := NewService()
     if service == nil {
         utils.HandleError(w, http.StatusInternalServerError, fmt.Errorf("Cannot create a session to database"))
         return
     }
-    task, err := service.GetDetailTask(task_id, owner)
+    task_id, err := service.ValidateTaskIDAndAuth(vars["task_id"], owner)
     if err != nil {
-        utils.HandleError(w, http.StatusInternalServerError, err)
-        return
-    }
-    // no task has 0 id
-    if task.ID == 0 {
-        utils.HandleError(w, http.StatusNotFound, fmt.Errorf("You do not own this task"))
+        var status int
+        switch err {
+        case SERVICE_ERROR_INVALID_TASK_ID:
+            status = http.StatusNotFound
+        case SERVICE_ERROR_INVALID_OWNER:
+            status = http.StatusNotFound
+        case SERVICE_ERROR_INTERNAL_SERVER_ERROR:
+            status = http.StatusInternalServerError
+        default:
+            status = http.StatusInternalServerError
+        }
+        utils.HandleError(w, status, err)
         return
     }
     err = service.ArchiveTask(task_id)
@@ -191,24 +194,25 @@ func HandleArchiveTask(w http.ResponseWriter, r *http.Request) {
 func HandleRestoreTask(w http.ResponseWriter, r *http.Request) {
     owner := r.Context().Value("username").(string)
     vars := mux.Vars(r)
-    task_id, err := strconv.Atoi(vars["task_id"])
-    if err != nil {
-        utils.HandleError(w, http.StatusNotFound, err)
-        return
-    }
     service := NewService()
     if service == nil {
         utils.HandleError(w, http.StatusInternalServerError, fmt.Errorf("Cannot create a session to database"))
         return
     }
-    task, err := service.GetDetailTask(task_id, owner)
+    task_id, err := service.ValidateTaskIDAndAuth(vars["task_id"], owner)
     if err != nil {
-        utils.HandleError(w, http.StatusInternalServerError, err)
-        return
-    }
-    // no task has 0 id
-    if task.ID == 0 {
-        utils.HandleError(w, http.StatusNotFound, fmt.Errorf("You do not own this task"))
+        var status int
+        switch err {
+        case SERVICE_ERROR_INVALID_TASK_ID:
+            status = http.StatusNotFound
+        case SERVICE_ERROR_INVALID_OWNER:
+            status = http.StatusNotFound
+        case SERVICE_ERROR_INTERNAL_SERVER_ERROR:
+            status = http.StatusInternalServerError
+        default:
+            status = http.StatusInternalServerError
+        }
+        utils.HandleError(w, status, err)
         return
     }
     err = service.RestoreTask(task_id)
